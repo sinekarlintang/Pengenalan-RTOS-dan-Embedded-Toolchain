@@ -40,7 +40,7 @@ void button_task(void *pvParameters) {
                 }
             }        
         }
-        vTaskDelay(pdMS_TO_TICKS(10)); // Polling delay
+        vTaskDelay(pdMS_TO_TICKS(10)); // Polling 100Hz
     }
 }
 
