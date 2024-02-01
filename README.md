@@ -16,13 +16,4 @@ Spesifikasi :
 Notes :
 
 1. Awalnya pakai xQueuesend dan xQueuereceive buat passing info dari task button ke task led apakah lagi short press atau long press. Tapi jadinya switch statenya ga barengan, sekali press hanya satu LED yang switch state. Terus baca baca terus coba pakai eventgroup and it works.
-2. help sampe skrg polling 100 Hz, kalo 1kHz keluar warning ini apaan
-
-E (40336) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:  
-E (40336) task_wdt:  - IDLE (CPU 1)  
-E (40336) task_wdt: Tasks currently running:  
-E (40336) task_wdt: CPU 0: IDLE  
-E (40336) task_wdt: CPU 1: Button Task  
-E (40336) task_wdt: Print CPU 1 backtrace  
-
-3. 
+2. Polling fixed to 1khz dengan naikin priority button task.
