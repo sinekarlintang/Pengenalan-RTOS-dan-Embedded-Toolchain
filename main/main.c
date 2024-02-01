@@ -17,7 +17,6 @@
 #define SHORT_PRESS_THRESHOLD 500 // milliseconds
 #define LONG_PRESS_THRESHOLD 800  // milliseconds
 
-QueueHandle_t buttonQueue;
 EventGroupHandle_t syncEventGroup;
 
 void button_task(void *pvParameters) {
@@ -40,7 +39,7 @@ void button_task(void *pvParameters) {
                 }
             }        
         }
-        vTaskDelay(pdMS_TO_TICKS(10)); // Polling 100Hz
+        vTaskDelay(pdMS_TO_TICKS(1)); // Polling 1kHz
     }
 }
 
@@ -106,8 +105,8 @@ void app_main() {
     gpio_set_pull_mode(BUTTON_GPIO, GPIO_PULLUP_ONLY);
 
     // Create tasks for button, red LED, blue LED, and green LED
-    xTaskCreatePinnedToCore(button_task, "Button Task", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(red_led_task, "Red LED Task", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(blue_led_task, "Blue LED Task", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(green_led_task, "Green LED Task", 2048, NULL, 1, NULL, 1);
+    xTaskCreate(button_task, "Button Task", 2048, NULL, 2, NULL);
+    xTaskCreate(red_led_task, "Red LED Task", 2048, NULL, 1, NULL);
+    xTaskCreate(blue_led_task, "Blue LED Task", 2048, NULL, 1, NULL);
+    xTaskCreate(green_led_task, "Green LED Task", 2048, NULL, 1, NULL);
 }
