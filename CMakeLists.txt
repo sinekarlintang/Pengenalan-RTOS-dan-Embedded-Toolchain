@@ -7,4 +7,4 @@ cmake_minimum_required(VERSION 3.16)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(Pengenalan-RTOS-dan-Embedded-Toolchain)
 
-add_subdirectory(lib/lwrb-develop)
+include(lib/lwrb/library.cmake)

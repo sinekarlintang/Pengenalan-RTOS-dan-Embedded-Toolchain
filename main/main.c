@@ -7,7 +7,7 @@
 #include "driver/uart.h"
 #include <string.h>
 #include "esp_log.h"
-#include "lwrb/lwrb.h"
+#include "../lib/lwrb/src/include/lwrb/lwrb.h"
 
 // Define queue handle
 QueueHandle_t data_queue;
@@ -218,9 +218,9 @@ void app_main() {
     xTaskCreate(rx_task, "uart_rx_task", 2048, NULL, 1, NULL);
     xTaskCreate(tx_task, "uart_tx_task", 2048, NULL, 1, NULL);
     xTaskCreate(button_task, "Button Task", 2048, NULL, 2, NULL);
-    xTaskCreate(red_led_task, "Red LED Task", 2048, NULL, 2, NULL);
-    xTaskCreate(blue_led_task, "Blue LED Task", 2048, NULL, 2, NULL);
+    xTaskCreate(red_led_task, "Red LED Task", 2048, NULL, 1, NULL);
+    xTaskCreate(blue_led_task, "Blue LED Task", 2048, NULL, 1, NULL);
     xTaskCreate(green_led_task, "Green LED Task", 2048, NULL, 1, NULL);
 
-
+    lwrb_init(&buff, buff_data, sizeof(buff_data));
 }
