@@ -80,6 +80,7 @@ void button_task(void *pvParameters) {
                 } else if(press_duration >= LONG_PRESS_THRESHOLD / portTICK_PERIOD_MS) {
                     xEventGroupSetBits(syncEventGroup, LONG_PRESS_BIT); // Set long press bit
                     ESP_LOGI("BUTTON", "LONG PRESS");
+                    esp_restart();
                 }
             }        
         }

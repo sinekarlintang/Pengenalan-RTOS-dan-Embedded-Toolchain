@@ -8,7 +8,7 @@ Spesifikasi :
 1. Input push button dan Output LED red, green, blue ✔
 2. Red LED default OFF, blue LED default ON, green LED blink continuously 300 ms cycle ✔
 3. Short press button to toggle blue and red LED state ✔
-4. Long press button to software reboot 
+4. Long press button to software reboot ✔
 5. Button, red LED, blue LED, and green LED masing-masing thread terpisah ✔
 6. Button pakai polling 1kHz 
 7. Tidak menggunakan external library selain bawaan ESP ✔ 
