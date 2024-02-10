@@ -7,6 +7,7 @@
 #include "driver/uart.h"
 #include <string.h>
 #include "esp_log.h"
+#include "lwrb/lwrb.h"
 
 // Define queue handle
 QueueHandle_t data_queue;
@@ -40,7 +41,27 @@ static const int RX_BUF_SIZE = 1024;
 int num = 0;
 
 EventGroupHandle_t syncEventGroup;
-EventGroupHandle_t commandEvent;
+lwrb_t buff;
+uint8_t buff_data[31];
+
+typedef enum{
+    BTN_PRESS_LONG,
+    BTN_PRESS_SHORT,
+    BLUE_ON_CMD,
+    BLUE_OFF_CMD,
+    RED_ON_CMD,
+    RED_OFF_CMD,
+    SWITCH_CMD,
+    DUMPLOG_CMD
+}Events;
+
+typedef struct {
+    unsigned int timestamp;
+    Events event;
+}LogData;
+
+const int LOG_SIZE = sizeof(LogData);
+
 
 void button_task(void *pvParameters) {
     bool button_state = false;
@@ -73,22 +94,17 @@ void red_led_task(void *pvParameters) {
     gpio_set_level(RED_LED_GPIO, red_state); // Default off
 
     while(1) {
-        EventBits_t bits = xEventGroupWaitBits(syncEventGroup, SHORT_PRESS_BIT | RED_ON_BIT | RED_OFF_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-        if (bits & SHORT_PRESS_BIT) {
+        EventBits_t bits = xEventGroupWaitBits(syncEventGroup, SHORT_PRESS_BIT | RED_ON_BIT | RED_OFF_BIT | SWITCH_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+        if ((bits & SHORT_PRESS_BIT) || (bits & SWITCH_BIT)) {
             red_state = !red_state;
             gpio_set_level(RED_LED_GPIO, red_state);
-            ESP_LOGI("RED", "TOGGLE");
         } else if (bits & RED_ON_BIT) {
-            // Turn RED LED on
             red_state = true;
             gpio_set_level(RED_LED_GPIO, red_state);
-            ESP_LOGI("RED_LED", "ON");
             xEventGroupClearBits(syncEventGroup,RED_ON_BIT);
         } else if (bits & RED_OFF_BIT) {
-            // Turn RED LED off
             red_state = false;
             gpio_set_level(RED_LED_GPIO, red_state);
-            ESP_LOGI("RED_LED", "OFF");
             xEventGroupClearBits(syncEventGroup,RED_OFF_BIT);
         }
     }
@@ -101,23 +117,18 @@ void blue_led_task(void *pvParameters) {
     gpio_set_level(BLUE_LED_GPIO, blue_state); 
 
     while(1) {
-        EventBits_t bits = xEventGroupWaitBits(syncEventGroup, SHORT_PRESS_BIT | BLUE_ON_BIT | BLUE_OFF_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-        if (bits & SHORT_PRESS_BIT) {
+        EventBits_t bits = xEventGroupWaitBits(syncEventGroup, SHORT_PRESS_BIT | BLUE_ON_BIT | BLUE_OFF_BIT | SWITCH_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+        if ((bits & SHORT_PRESS_BIT) || (bits & SWITCH_BIT)) {
             blue_state = !blue_state;
             gpio_set_level(BLUE_LED_GPIO, blue_state);
-            ESP_LOGI("BLUE_LED", "TOGGLE");
             xEventGroupClearBits(syncEventGroup, SHORT_PRESS_BIT);
         }else if (bits & BLUE_ON_BIT) {
-            // Turn blue LED on
             blue_state = true;
             gpio_set_level(BLUE_LED_GPIO, blue_state);
-            ESP_LOGI("BLUE_LED", "ON");
             xEventGroupClearBits(syncEventGroup,BLUE_ON_BIT);
         } else if (bits & BLUE_OFF_BIT) {
-            // Turn blue LED off
             blue_state = false;
             gpio_set_level(BLUE_LED_GPIO, blue_state);
-            ESP_LOGI("BLUE_LED", "OFF");
             xEventGroupClearBits(syncEventGroup,BLUE_OFF_BIT);
         }
     }
@@ -196,21 +207,19 @@ static void rx_task(void *arg)
     free(data);
 }
 void app_main() {
-    // Initialize GPIOs and eventGroup
     syncEventGroup = xEventGroupCreate();
-    commandEvent = xEventGroupCreate();
     gpio_set_direction(BUTTON_GPIO, GPIO_MODE_INPUT);
     gpio_set_pull_mode(BUTTON_GPIO, GPIO_PULLUP_ONLY);
 
-    // In your initialization function, create the queue
-    data_queue = xQueueCreate(10, sizeof(char*)); // Adjust queue length as needed
+    data_queue = xQueueCreate(10, sizeof(char*)); 
 
     init();
     xTaskCreate(rx_task, "uart_rx_task", 2048, NULL, 1, NULL);
     xTaskCreate(tx_task, "uart_tx_task", 2048, NULL, 1, NULL);
-    // Create tasks for button, red LED, blue LED, and green LED
     xTaskCreate(button_task, "Button Task", 2048, NULL, 2, NULL);
     xTaskCreate(red_led_task, "Red LED Task", 2048, NULL, 2, NULL);
     xTaskCreate(blue_led_task, "Blue LED Task", 2048, NULL, 2, NULL);
     xTaskCreate(green_led_task, "Green LED Task", 2048, NULL, 1, NULL);
+
+
 }
